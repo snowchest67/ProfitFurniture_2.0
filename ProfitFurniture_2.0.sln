@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35303.130
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProfitFurniture_2.0", "ProfitFurniture_2.0.csproj", "{A9EC6966-63A0-4928-A1AD-0040E8315BDC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A9EC6966-63A0-4928-A1AD-0040E8315BDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9EC6966-63A0-4928-A1AD-0040E8315BDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9EC6966-63A0-4928-A1AD-0040E8315BDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9EC6966-63A0-4928-A1AD-0040E8315BDC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BCC66A30-E64F-4FAE-9BC7-A4325CA4E60D}
+	EndGlobalSection
+EndGlobal
