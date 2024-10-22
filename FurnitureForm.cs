@@ -19,6 +19,8 @@ namespace ProfitFurniture_2._0
         public FurnitureForm()
         {
             StartPosition = FormStartPosition.CenterScreen;
+           
+
             var checkedListBox = new CheckedListBox
             {
                 Dock = DockStyle.Fill,
@@ -30,7 +32,13 @@ namespace ProfitFurniture_2._0
             var inputTextBox = new TextBox { Dock = DockStyle.Top };
             Controls.Add(inputTextBox);
 
-            var addButton = new Button { Text = "Добавить", Dock = DockStyle.Top };
+            var addButton = new Button
+            {
+                Text = "Добавить",
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                MinimumSize = new Size(100, 0) // Установите минимальную ширину
+            };
             addButton.Click += (sender, e) =>
             {
                 var newFurniture = inputTextBox.Text;
@@ -47,7 +55,13 @@ namespace ProfitFurniture_2._0
             };
             Controls.Add(addButton);
 
-            var okButton = new Button { Text = "OK", Dock = DockStyle.Bottom };
+            var okButton = new Button
+            {
+                Text = "OK",
+                Dock = DockStyle.Bottom,
+                AutoSize = true,
+                MinimumSize = new Size(100, 0) // Установите минимальную ширину
+            };
             okButton.Click += (sender, e) =>
             {
                 SelectedFurniture = checkedListBox.CheckedItems.Cast<string>().ToList();
