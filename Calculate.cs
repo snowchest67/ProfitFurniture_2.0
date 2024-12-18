@@ -29,6 +29,8 @@ namespace ProfitFurniture_2._0
         public Calculate()
         {
             InitializeComponent();
+            dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
+            dataGridView1.DataError += dataGridView1_DataError;
         }
 
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -88,337 +90,199 @@ namespace ProfitFurniture_2._0
 
         private void расчитатьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-            foreach (DataGridViewRow row in dataGridView1.Rows)
+            try
             {
-                if (!row.IsNewRow)
+                foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
-                    // Проверка значений и их преобразование
-                    if (row.Cells[11].Value != null && decimal.TryParse(row.Cells[11].Value.ToString(), out decimal value11))
+                    if (!row.IsNewRow)
                     {
-                        // Умножение значения на 0,05
-                        decimal result = value11 * 0.05m;
-
-                        // Запись результата в 11-й столбец
-                        row.Cells[10].Value = result;
-                    }
-                    else
-                    {
-                        // Обработка пустых ячеек
-                        row.Cells[10].Value = "N/A";
-                    }
-                    row.Cells[10].Style.BackColor = Color.LightSalmon;
-                }
-            }
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                if (!row.IsNewRow)
-                {
-                    // Инициализация значений
-                    decimal value11 = 0, value9 = 0, value10 = 0;
-
-                    // Проверка и преобразование значений
-                    if (row.Cells[11].Value != null && decimal.TryParse(row.Cells[11].Value.ToString(), out decimal tempValue11))
-                    {
-                        value11 = tempValue11;
-                    }
-
-                    if (row.Cells[9].Value != null && decimal.TryParse(row.Cells[9].Value.ToString(), out decimal tempValue9))
-                    {
-                        value9 = tempValue9;
-                    }
-
-                    if (row.Cells[10].Value != null && decimal.TryParse(row.Cells[10].Value.ToString(), out decimal tempValue10))
-                    {
-                        value10 = tempValue10;
-                    }
-
-
-                    // Вычисление значения по формуле
-                    decimal result = (value11 - value9 - value10) * 0.1m;
-
-                    // Запись результата в 12-й столбец
-                    row.Cells[12].Value = result;
-                    row.Cells[12].Style.BackColor = Color.LemonChiffon;
-                }
-            }
-
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                if (!row.IsNewRow)
-                {
-                    decimal sum = 0;
-
-                    // Суммирование значений столбцов 3-11 и 13-14
-                    for (int i = 2; i <= 10; i++)
-                    {
-                        if (row.Cells[i].Value != null && decimal.TryParse(row.Cells[i].Value.ToString(), out decimal value))
+                        foreach (DataGridViewCell cell in row.Cells)
                         {
-                            sum += value;
+                            if (cell.Style.BackColor == Color.Red)
+                            {
+                                cell.Style.BackColor = Color.White;
+                            }
                         }
                     }
-
-                    if (row.Cells[12].Value != null && decimal.TryParse(row.Cells[12].Value.ToString(), out decimal value13))
-                    {
-                        sum += value13;
-                    }
-
-                    if (row.Cells[13].Value != null && decimal.TryParse(row.Cells[13].Value.ToString(), out decimal value14))
-                    {
-                        sum += value14;
-                    }
-                    // Запись результата в 15-й столбец
-                    row.Cells[14].Value = sum;
-                    row.Cells[14].Style.BackColor = Color.Turquoise;
                 }
-            }
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                if (!row.IsNewRow)
+                foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
-                    // Инициализация значений
-                    decimal value11 = 0, value14 = 0, value15 = 0;
-
-                    // Проверка и преобразование значений
-                    if (row.Cells[11].Value != null && decimal.TryParse(row.Cells[11].Value.ToString(), out decimal tempValue11))
+                    if (!row.IsNewRow)
                     {
-                        value11 = tempValue11;
-                    }
+                        // Проверка значений и их преобразование
+                        if (row.Cells[11].Value != null && decimal.TryParse(row.Cells[11].Value.ToString(), out decimal value11))
+                        {
+                            // Умножение значения на 0,05
+                            decimal result = value11 * 0.05m;
 
-                    if (row.Cells[14].Value != null && decimal.TryParse(row.Cells[14].Value.ToString(), out decimal tempValue14))
+                            // Запись результата в 11-й столбец
+                            row.Cells[10].Value = result;
+                        }
+                        else
+                        {
+                            // Обработка пустых ячеек
+                            row.Cells[10].Value = "N/A";
+                            row.Cells[10].Style.BackColor = Color.Red;
+                        }
+                        row.Cells[10].Style.BackColor = Color.LightSalmon;
+                    }
+                }
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    if (!row.IsNewRow)
                     {
-                        value14 = tempValue14;
+                        // Инициализация значений
+                        decimal value11 = 0, value9 = 0, value10 = 0;
+
+                        // Проверка и преобразование значений
+                        if (row.Cells[11].Value != null && decimal.TryParse(row.Cells[11].Value.ToString(), out decimal tempValue11))
+                        {
+                            value11 = tempValue11;
+                        }
+                        else
+                        {
+                            row.Cells[11].Style.BackColor = Color.Red;
+                            throw new Exception("Некорректное значение в столбце 11");
+                        }
+
+                        if (row.Cells[9].Value != null && decimal.TryParse(row.Cells[9].Value.ToString(), out decimal tempValue9))
+                        {
+                            value9 = tempValue9;
+                        }
+                        else
+                        {
+                            row.Cells[9].Style.BackColor = Color.Red;
+                            throw new Exception("Некорректное значение в столбце 9");
+                        }
+
+                        if (row.Cells[10].Value != null && decimal.TryParse(row.Cells[10].Value.ToString(), out decimal tempValue10))
+                        {
+                            value10 = tempValue10;
+                        }
+                        else
+                        {
+                            row.Cells[10].Style.BackColor = Color.Red;
+                            throw new Exception("Некорректное значение в столбце 10");
+                        }
+
+                        // Вычисление значения по формуле
+                        decimal result = (value11 - value9 - value10) * 0.1m;
+
+                        // Запись результата в 12-й столбец
+                        row.Cells[12].Value = result;
+                        row.Cells[12].Style.BackColor = Color.LemonChiffon;
                     }
+                }
 
-                    // Вычисление суммы 12-го и 14-го столбцов
-                    decimal sum = value11 - value14;
-                    row.Cells[15].Value = sum;
-                    row.Cells[15].Style.BackColor = Color.PaleGreen;
-
-                    if (row.Cells[15].Value != null && decimal.TryParse(row.Cells[15].Value.ToString(), out decimal tempValue15))
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    if (!row.IsNewRow)
                     {
-                        value15 = tempValue15;
-                    }
+                        decimal sum = 0;
 
+                        // Суммирование значений столбцов 3-11 и 13-14
+                        for (int i = 2; i <= 10; i++)
+                        {
+                            if (row.Cells[i].Value != null && decimal.TryParse(row.Cells[i].Value.ToString(), out decimal value))
+                            {
+                                sum += value;
+                            }
+                            else
+                            {
+                                row.Cells[i].Style.BackColor = Color.Red;
+                                throw new Exception($"Некорректное значение в столбце {i}");
+                            }
+                        }
 
-                    // Вычисление частного 15-го и 14-го столбцов
-                    if (value14 != 0)
-                    {
-                        decimal quotient = value15 / value14 * 100;
-                        row.Cells[16].Value = Math.Round(quotient, 0);
+                        if (row.Cells[12].Value != null && decimal.TryParse(row.Cells[12].Value.ToString(), out decimal value13))
+                        {
+                            sum += value13;
+                        }
+                        else
+                        {
+                            row.Cells[12].Style.BackColor = Color.Red;
+                            throw new Exception("Некорректное значение в столбце 12");
+                        }
+
+                        if (row.Cells[13].Value != null && decimal.TryParse(row.Cells[13].Value.ToString(), out decimal value14))
+                        {
+                            sum += value14;
+                        }
+                        else
+                        {
+                            row.Cells[13].Style.BackColor = Color.Red;
+                            throw new Exception("Некорректное значение в столбце 13");
+                        }
+
+                        // Запись результата в 15-й столбец
+                        row.Cells[14].Value = sum;
+                        row.Cells[14].Style.BackColor = Color.Turquoise;
                     }
-                    else
+                }
+
+                foreach (DataGridViewRow row in dataGridView1.Rows)
+                {
+                    if (!row.IsNewRow)
                     {
-                        row.Cells[16].Value = "N/A"; // Обработка деления на ноль
+                        // Инициализация значений
+                        decimal value11 = 0, value14 = 0, value15 = 0;
+
+                        // Проверка и преобразование значений
+                        if (row.Cells[11].Value != null && decimal.TryParse(row.Cells[11].Value.ToString(), out decimal tempValue11))
+                        {
+                            value11 = tempValue11;
+                        }
+                        else
+                        {
+                            row.Cells[11].Style.BackColor = Color.Red;
+                            throw new Exception("Некорректное значение в столбце 11");
+                        }
+
+                        if (row.Cells[14].Value != null && decimal.TryParse(row.Cells[14].Value.ToString(), out decimal tempValue14))
+                        {
+                            value14 = tempValue14;
+                        }
+                        else
+                        {
+                            row.Cells[14].Style.BackColor = Color.Red;
+                            throw new Exception("Некорректное значение в столбце 14");
+                        }
+
+                        // Вычисление суммы 12-го и 14-го столбцов
+                        decimal sum = value11 - value14;
+                        row.Cells[15].Value = sum;
+                        row.Cells[15].Style.BackColor = Color.PaleGreen;
+
+                        if (row.Cells[15].Value != null && decimal.TryParse(row.Cells[15].Value.ToString(), out decimal tempValue15))
+                        {
+                            value15 = tempValue15;
+                        }
+                        else
+                        {
+                            row.Cells[15].Style.BackColor = Color.Red;
+                            throw new Exception("Некорректное значение в столбце 15");
+                        }
+
+                        // Вычисление частного 15-го и 14-го столбцов
+                        if (value14 != 0)
+                        {
+                            decimal quotient = value15 / value14 * 100;
+                            row.Cells[16].Value = Math.Round(quotient, 0);
+                        }
+                        else
+                        {
+                            row.Cells[16].Value = "N/A"; // Обработка деления на ноль
+                        }
+                        row.Cells[16].Style.BackColor = Color.LightSteelBlue;
                     }
-                    row.Cells[16].Style.BackColor = Color.LightSteelBlue;
                 }
             }
-            //foreach (DataGridViewRow row in dataGridView1.Rows)
-            //{
-            //    if (!row.IsNewRow)
-            //    {
-            //        List<string> errorCells = new List<string>();
-            //        decimal value11 = 0;
-
-            //        // Проверка значений и их преобразование
-            //        if (row.Cells[11].Value != null && !string.IsNullOrWhiteSpace(row.Cells[11].Value.ToString()) && decimal.TryParse(row.Cells[11].Value.ToString(), out value11))
-            //        {
-            //            // Умножение значения на 0,05
-            //            decimal result = value11 * 0.05m;
-
-            //            // Запись результата в 11-й столбец
-            //            row.Cells[10].Value = result;
-            //        }
-            //        else if (row.Cells[11].Value != null && !string.IsNullOrWhiteSpace(row.Cells[11].Value.ToString()))
-            //        {
-            //            // Обработка некорректных значений
-            //            row.Cells[10].Value = $"Ошибка({row.Index + 1}:11)";
-            //            row.Cells[10].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:11)");
-            //        }
-
-            //        // Инициализация значений
-            //        decimal value9 = 0, value10 = 0;
-
-            //        // Проверка и преобразование значений
-            //        if (row.Cells[9].Value != null && !string.IsNullOrWhiteSpace(row.Cells[9].Value.ToString()) && decimal.TryParse(row.Cells[9].Value.ToString(), out decimal tempValue9))
-            //        {
-            //            value9 = tempValue9;
-            //        }
-            //        else if (row.Cells[9].Value != null && !string.IsNullOrWhiteSpace(row.Cells[9].Value.ToString()))
-            //        {
-            //            row.Cells[9].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:9)");
-            //        }
-
-            //        if (row.Cells[10].Value != null && !string.IsNullOrWhiteSpace(row.Cells[10].Value.ToString()) && decimal.TryParse(row.Cells[10].Value.ToString(), out decimal tempValue10))
-            //        {
-            //            value10 = tempValue10;
-            //        }
-            //        else if (row.Cells[10].Value != null && !string.IsNullOrWhiteSpace(row.Cells[10].Value.ToString()))
-            //        {
-            //            row.Cells[10].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:10)");
-            //        }
-
-            //        // Вычисление значения по формуле
-            //        if (errorCells.Count == 0)
-            //        {
-            //            decimal result = (value11 - value9 - value10) * 0.1m;
-
-            //            // Запись результата в 12-й столбец
-            //            row.Cells[12].Value = result;
-            //            row.Cells[12].Style.BackColor = Color.LemonChiffon;
-            //        }
-            //        else
-            //        {
-            //            row.Cells[12].Value = $"Ошибка: {string.Join("; ", errorCells)}";
-            //            row.Cells[12].Style.BackColor = Color.Blue;
-            //        }
-            //    }
-            //}
-
-            //foreach (DataGridViewRow row in dataGridView1.Rows)
-            //{
-            //    if (!row.IsNewRow)
-            //    {
-            //        List<string> errorCells = new List<string>();
-            //        decimal sum = 0;
-
-            //        // Суммирование значений столбцов 3-11 и 13-14
-            //        for (int i = 2; i <= 10; i++)
-            //        {
-            //            if (row.Cells[i].Value != null && !string.IsNullOrWhiteSpace(row.Cells[i].Value.ToString()) && decimal.TryParse(row.Cells[i].Value.ToString(), out decimal value))
-            //            {
-            //                sum += value;
-            //            }
-            //            else if (row.Cells[i].Value != null && !string.IsNullOrWhiteSpace(row.Cells[i].Value.ToString()))
-            //            {
-            //                row.Cells[i].Style.BackColor = Color.Red;
-            //                errorCells.Add($"({row.Index + 1}:{i + 1})");
-            //            }
-            //        }
-
-            //        if (row.Cells[12].Value != null && !string.IsNullOrWhiteSpace(row.Cells[12].Value.ToString()) && decimal.TryParse(row.Cells[12].Value.ToString(), out decimal value13))
-            //        {
-            //            sum += value13;
-            //        }
-            //        else if (row.Cells[12].Value != null && !string.IsNullOrWhiteSpace(row.Cells[12].Value.ToString()))
-            //        {
-            //            row.Cells[12].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:12)");
-            //        }
-
-            //        if (row.Cells[13].Value != null && !string.IsNullOrWhiteSpace(row.Cells[13].Value.ToString()) && decimal.TryParse(row.Cells[13].Value.ToString(), out decimal value14))
-            //        {
-            //            sum += value14;
-            //        }
-            //        else if (row.Cells[13].Value != null && !string.IsNullOrWhiteSpace(row.Cells[13].Value.ToString()))
-            //        {
-            //            row.Cells[13].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:13)");
-            //        }
-
-            //        // Запись результата в 15-й столбец
-            //        if (errorCells.Count == 0)
-            //        {
-            //            row.Cells[14].Value = sum;
-            //            row.Cells[14].Style.BackColor = Color.Turquoise;
-            //        }
-            //        else
-            //        {
-            //            row.Cells[14].Value = $"Ошибка: {string.Join("; ", errorCells)}";
-            //            row.Cells[14].Style.BackColor = Color.Blue;
-            //        }
-            //    }
-            //}
-
-            //foreach (DataGridViewRow row in dataGridView1.Rows)
-            //{
-            //    if (!row.IsNewRow)
-            //    {
-            //        List<string> errorCells = new List<string>();
-
-            //        // Инициализация значений
-            //        decimal value11 = 0, value14 = 0;
-
-            //        // Проверка и преобразование значений
-            //        if (row.Cells[11].Value != null && !string.IsNullOrWhiteSpace(row.Cells[11].Value.ToString()) && decimal.TryParse(row.Cells[11].Value.ToString(), out decimal tempValue11))
-            //        {
-            //            value11 = tempValue11;
-            //        }
-            //        else if (row.Cells[11].Value != null && !string.IsNullOrWhiteSpace(row.Cells[11].Value.ToString()))
-            //        {
-            //            row.Cells[11].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:11)");
-            //        }
-
-            //        if (row.Cells[14].Value != null && !string.IsNullOrWhiteSpace(row.Cells[14].Value.ToString()) && decimal.TryParse(row.Cells[14].Value.ToString(), out decimal tempValue14))
-            //        {
-            //            value14 = tempValue14;
-            //        }
-            //        else if (row.Cells[14].Value != null && !string.IsNullOrWhiteSpace(row.Cells[14].Value.ToString()))
-            //        {
-            //            row.Cells[14].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:14)");
-            //        }
-
-            //        // Вычисление суммы 12-го и 14-го столбцов
-            //        if (errorCells.Count == 0)
-            //        {
-            //            decimal sum = value11 - value14;
-            //            row.Cells[15].Value = sum;
-            //            row.Cells[15].Style.BackColor = Color.PaleGreen;
-            //        }
-            //        else
-            //        {
-            //            row.Cells[15].Value = $"Ошибка: {string.Join("; ", errorCells)}";
-            //            row.Cells[15].Style.BackColor = Color.Blue;
-            //        }
-            //        // Инициализация значений
-            //        decimal value15 = 0;
-
-            //        // Проверка и преобразование значений
-            //        if (row.Cells[14].Value != null && !string.IsNullOrWhiteSpace(row.Cells[14].Value.ToString()) && decimal.TryParse(row.Cells[14].Value.ToString(), out tempValue14))
-            //        {
-            //            value14 = tempValue14;
-            //        }
-            //        else if (row.Cells[14].Value != null && !string.IsNullOrWhiteSpace(row.Cells[14].Value.ToString()))
-            //        {
-            //            row.Cells[14].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:14)");
-            //        }
-
-            //        if (row.Cells[15].Value != null && !string.IsNullOrWhiteSpace(row.Cells[15].Value.ToString()) && decimal.TryParse(row.Cells[15].Value.ToString(), out decimal tempValue15))
-            //        {
-            //            value15 = tempValue15;
-            //        }
-            //        else if (row.Cells[15].Value != null && !string.IsNullOrWhiteSpace(row.Cells[15].Value.ToString()))
-            //        {
-            //            row.Cells[15].Style.BackColor = Color.Red;
-            //            errorCells.Add($"({row.Index + 1}:15)");
-            //        }
-
-            //        // Вычисление частного 15-го и 14-го столбцов
-            //        if (errorCells.Count == 0)
-            //        {
-            //            if (value14 != 0)
-            //            {
-            //                decimal quotient = value15 / value14 * 100;
-            //                row.Cells[16].Value = Math.Round(quotient, 0);
-            //            }
-            //            else
-            //            {
-            //                row.Cells[16].Value = "N/A"; // Обработка деления на ноль
-            //            }
-            //            row.Cells[16].Style.BackColor = Color.LightSteelBlue;
-            //        }
-            //        else
-            //        {
-            //            row.Cells[16].Value = $"Ошибка: {string.Join("; ", errorCells)}";
-            //            row.Cells[16].Style.BackColor = Color.Blue;
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
+
 
 
 
@@ -938,6 +802,13 @@ namespace ProfitFurniture_2._0
                 }
             }
         }
+        private void dataGridView1_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            // Обработка ошибки
+            MessageBox.Show($"Ошибка в строке {e.RowIndex + 1}, столбце {e.ColumnIndex + 1}: {e.Exception.Message}, ячейка должна иметь формат даты **.**.****\nдни 1-31\nмесяц 1-12", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            
+        }
+
     }
 }
 
