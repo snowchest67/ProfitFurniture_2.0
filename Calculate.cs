@@ -29,13 +29,14 @@ namespace ProfitFurniture_2._0
         public Calculate()
         {
             InitializeComponent();
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             dataGridView1.CellValueChanged += dataGridView1_CellValueChanged;
             dataGridView1.DataError += dataGridView1_DataError;
         }
 
         private void открытьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             try
             {
                 DialogResult res = openFileDialog1.ShowDialog();
@@ -58,23 +59,31 @@ namespace ProfitFurniture_2._0
         }
         private void OpenExcelFile(string path)
         {
-            FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read);
-            IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
-            DataSet db = reader.AsDataSet(new ExcelDataSetConfiguration()
+            try
             {
-                ConfigureDataTable = (x) => new ExcelDataTableConfiguration()
+                FileStream stream = File.Open(path, FileMode.Open, FileAccess.Read);
+                IExcelDataReader reader = ExcelReaderFactory.CreateReader(stream);
+                DataSet db = reader.AsDataSet(new ExcelDataSetConfiguration()
                 {
-                    UseHeaderRow = true
-                }
-            });
+                    ConfigureDataTable = (x) => new ExcelDataTableConfiguration()
+                    {
+                        UseHeaderRow = true
+                    }
+                });
 
-            tableCollection = db.Tables;
-            toolStripComboBox1.Items.Clear();
-            foreach (System.Data.DataTable tabe in tableCollection)
-            {
-                toolStripComboBox1.Items.Add(tabe.TableName);
+                tableCollection = db.Tables;
+                toolStripComboBox1.Items.Clear();
+                foreach (System.Data.DataTable tabe in tableCollection)
+                {
+                    toolStripComboBox1.Items.Add(tabe.TableName);
+                }
+                toolStripComboBox1.SelectedIndex = 0;
             }
-            toolStripComboBox1.SelectedIndex = 0;
+            catch(Exception ex) 
+            {
+                MessageBox.Show(ex.Message, "Непредвиденная ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            
         }
 
         private void toolStripComboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -92,6 +101,7 @@ namespace ProfitFurniture_2._0
         {
             try
             {
+                if (filename == string.Empty) throw new Exception("Файл не был открыт.");
                 foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
                     if (!row.IsNewRow)
@@ -289,349 +299,381 @@ namespace ProfitFurniture_2._0
 
         private void какНовыйToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            System.Windows.Forms.ProgressBar progressBar = new System.Windows.Forms.ProgressBar();
-            progressBar.Maximum = toolStripComboBox1.Items.Count;
-            progressBar.Step = 1;
-            progressBar.Style = ProgressBarStyle.Continuous;
-
-            Form progressForm = new Form();
-            progressForm.Text = "Progress";
-            progressForm.Controls.Add(progressBar);
-            progressBar.Dock = DockStyle.Fill;
-            progressForm.StartPosition = FormStartPosition.CenterScreen;
-            progressForm.Size = new Size(300, 70);
-            progressForm.Show();
-
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.DoWork += (s, args) =>
+            try
             {
-                Excel.Application exApp = new Excel.Application();
-                Excel.Workbook workbook = exApp.Workbooks.Add();
-                Excel.Worksheet defaultSheet = workbook.Worksheets[1];
-                int index = toolStripComboBox1.Items.Count - 1;
-                System.Data.DataTable table;
-                for (int item = toolStripComboBox1.Items.Count - 1; item >= 0; item--)
+                if (filename == string.Empty) throw new Exception("Файл не был открыт.");
+                System.Windows.Forms.ProgressBar progressBar = new System.Windows.Forms.ProgressBar();
+                progressBar.Maximum = toolStripComboBox1.Items.Count;
+                progressBar.Step = 1;
+                progressBar.Style = ProgressBarStyle.Continuous;
+
+                Form progressForm = new Form();
+                progressForm.Text = "Progress";
+                progressForm.Controls.Add(progressBar);
+                progressBar.Dock = DockStyle.Fill;
+                progressForm.StartPosition = FormStartPosition.CenterScreen;
+                progressForm.Size = new Size(300, 70);
+                progressForm.Show();
+
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += (s, args) =>
                 {
-                    table = tableCollection[Convert.ToString(toolStripComboBox1.Items[index])];
-                    dataGridView1.Invoke(new System.Action(() => dataGridView1.DataSource = table));
-                    string sheetName = toolStripComboBox1.Items[item].ToString();
-                    Excel.Worksheet wsh = workbook.Sheets.Add();
-                    wsh.Name = sheetName;
-                    for (int i = 0; i <= dataGridView1.RowCount - 2; i++)
+                    Excel.Application exApp = new Excel.Application();
+                    Excel.Workbook workbook = exApp.Workbooks.Add();
+                    Excel.Worksheet defaultSheet = workbook.Worksheets[1];
+                    int index = toolStripComboBox1.Items.Count - 1;
+                    System.Data.DataTable table;
+                    for (int item = toolStripComboBox1.Items.Count - 1; item >= 0; item--)
                     {
-                        for (int j = 0; j <= dataGridView1.ColumnCount - 1; j++)
+                        table = tableCollection[Convert.ToString(toolStripComboBox1.Items[index])];
+                        dataGridView1.Invoke(new System.Action(() => dataGridView1.DataSource = table));
+                        string sheetName = toolStripComboBox1.Items[item].ToString();
+                        Excel.Worksheet wsh = workbook.Sheets.Add();
+                        wsh.Name = sheetName;
+                        for (int i = 0; i <= dataGridView1.RowCount - 2; i++)
                         {
-                            Excel.Range headerCell = wsh.Cells[1, j + 1];
-                            headerCell.Value = dataGridView1.Columns[j].HeaderText;
-                            headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                            headerCell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                            headerCell.Font.Bold = true;
-                            wsh.Cells[i + 2, j + 1] = dataGridView1[j, i].Value;
+                            for (int j = 0; j <= dataGridView1.ColumnCount - 1; j++)
+                            {
+                                Excel.Range headerCell = wsh.Cells[1, j + 1];
+                                headerCell.Value = dataGridView1.Columns[j].HeaderText;
+                                headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                                headerCell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                                headerCell.Font.Bold = true;
+                                wsh.Cells[i + 2, j + 1] = dataGridView1[j, i].Value;
+                            }
                         }
+                        index--;
+                        wsh.Columns.AutoFit();
+                        worker.ReportProgress(toolStripComboBox1.Items.Count - item);
                     }
-                    index--;
-                    wsh.Columns.AutoFit();
-                    worker.ReportProgress(toolStripComboBox1.Items.Count - item);
-                }
-                table = tableCollection[Convert.ToString(toolStripComboBox1.Items[0])];
-                dataGridView1.Invoke(new System.Action(() => dataGridView1.DataSource = table));
-                defaultSheet.Delete();
-                exApp.Visible = true;
-            };
+                    table = tableCollection[Convert.ToString(toolStripComboBox1.Items[0])];
+                    dataGridView1.Invoke(new System.Action(() => dataGridView1.DataSource = table));
+                    defaultSheet.Delete();
+                    exApp.Visible = true;
+                };
 
-            worker.ProgressChanged += (s, args) =>
+                worker.ProgressChanged += (s, args) =>
+                {
+                    progressBar.Value = args.ProgressPercentage;
+                };
+
+                worker.RunWorkerCompleted += (s, args) =>
+                {
+                    progressForm.Close();
+                };
+
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
             {
-                progressBar.Value = args.ProgressPercentage;
-            };
-
-            worker.RunWorkerCompleted += (s, args) =>
-            {
-                progressForm.Close();
-            };
-
-            worker.RunWorkerAsync();
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void какСтарыйToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            System.Windows.Forms.ProgressBar progressBar = new System.Windows.Forms.ProgressBar();
-            progressBar.Maximum = toolStripComboBox1.Items.Count;
-            progressBar.Step = 1;
-            progressBar.Style = ProgressBarStyle.Continuous;
-
-            Form progressForm = new Form();
-            progressForm.Text = "Progress";
-            progressForm.Controls.Add(progressBar);
-            progressBar.Dock = DockStyle.Fill;
-            progressForm.StartPosition = FormStartPosition.CenterScreen;
-            progressForm.Size = new Size(300, 70);
-            progressForm.Show();
-
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.DoWork += (s, args) =>
+            try
             {
-                Excel.Application exApp = new Excel.Application();
-                Excel.Workbook workbook = exApp.Workbooks.Open(filename);
-                int index = toolStripComboBox1.Items.Count - 1;
-                System.Data.DataTable table;
+                if (filename == string.Empty) throw new Exception("Файл не был открыт.");
+                System.Windows.Forms.ProgressBar progressBar = new System.Windows.Forms.ProgressBar();
+                progressBar.Maximum = toolStripComboBox1.Items.Count;
+                progressBar.Step = 1;
+                progressBar.Style = ProgressBarStyle.Continuous;
 
-                for (int item = toolStripComboBox1.Items.Count - 1; item >= 0; item--)
+                Form progressForm = new Form();
+                progressForm.Text = "Progress";
+                progressForm.Controls.Add(progressBar);
+                progressBar.Dock = DockStyle.Fill;
+                progressForm.StartPosition = FormStartPosition.CenterScreen;
+                progressForm.Size = new Size(300, 70);
+                progressForm.Show();
+
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += (s, args) =>
                 {
-                    table = tableCollection[Convert.ToString(toolStripComboBox1.Items[index])];
-                    dataGridView1.Invoke(new System.Action(() => dataGridView1.DataSource = table));
-                    string sheetName = toolStripComboBox1.Items[item].ToString();
-                    Excel.Worksheet wsh;
-                    try
-                    {
-                        wsh = workbook.Sheets[sheetName];
-                    }
-                    catch
-                    {
-                        wsh = workbook.Sheets.Add();
-                        wsh.Name = sheetName;
-                    }
+                    Excel.Application exApp = new Excel.Application();
+                    Excel.Workbook workbook = exApp.Workbooks.Open(filename);
+                    int index = toolStripComboBox1.Items.Count - 1;
+                    System.Data.DataTable table;
 
-                    for (int i = 0; i <= dataGridView1.RowCount - 2; i++)
+                    for (int item = toolStripComboBox1.Items.Count - 1; item >= 0; item--)
                     {
-                        for (int j = 0; j <= dataGridView1.ColumnCount - 1; j++)
+                        table = tableCollection[Convert.ToString(toolStripComboBox1.Items[index])];
+                        dataGridView1.Invoke(new System.Action(() => dataGridView1.DataSource = table));
+                        string sheetName = toolStripComboBox1.Items[item].ToString();
+                        Excel.Worksheet wsh;
+                        try
                         {
-                            Excel.Range headerCell = wsh.Cells[1, j + 1];
-                            headerCell.Value = dataGridView1.Columns[j].HeaderText;
-                            headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                            headerCell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                            headerCell.Font.Bold = true;
-                            wsh.Cells[i + 2, j + 1] = dataGridView1[j, i].Value;
+                            wsh = workbook.Sheets[sheetName];
                         }
+                        catch
+                        {
+                            wsh = workbook.Sheets.Add();
+                            wsh.Name = sheetName;
+                        }
+
+                        for (int i = 0; i <= dataGridView1.RowCount - 2; i++)
+                        {
+                            for (int j = 0; j <= dataGridView1.ColumnCount - 1; j++)
+                            {
+                                Excel.Range headerCell = wsh.Cells[1, j + 1];
+                                headerCell.Value = dataGridView1.Columns[j].HeaderText;
+                                headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                                headerCell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                                headerCell.Font.Bold = true;
+                                wsh.Cells[i + 2, j + 1] = dataGridView1[j, i].Value;
+                            }
+                        }
+                        index--;
+                        worker.ReportProgress(toolStripComboBox1.Items.Count - item);
+                        wsh.Columns.AutoFit();
                     }
-                    index--;
-                    worker.ReportProgress(toolStripComboBox1.Items.Count - item);
-                    wsh.Columns.AutoFit();
-                }
 
-                table = tableCollection[Convert.ToString(toolStripComboBox1.Items[0])];
-                dataGridView1.Invoke(new System.Action(() => dataGridView1.DataSource = table));
-                exApp.Visible = true;
-                workbook.Save();
-            };
+                    table = tableCollection[Convert.ToString(toolStripComboBox1.Items[0])];
+                    dataGridView1.Invoke(new System.Action(() => dataGridView1.DataSource = table));
+                    exApp.Visible = true;
+                    workbook.Save();
+                };
 
-            worker.ProgressChanged += (s, args) =>
+                worker.ProgressChanged += (s, args) =>
+                {
+                    progressBar.Value = args.ProgressPercentage;
+                };
+
+                worker.RunWorkerCompleted += (s, args) =>
+                {
+                    progressForm.Close();
+                };
+
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
             {
-                progressBar.Value = args.ProgressPercentage;
-            };
-
-            worker.RunWorkerCompleted += (s, args) =>
-            {
-                progressForm.Close();
-            };
-
-            worker.RunWorkerAsync();
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void отчётВWordToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            decimal totalProfit = 0;
-            decimal totalCost = 0;
-            decimal totalClientPrice = 0;
-            decimal totalProfitability = 0;
-            decimal totalFurnitureAssembled = 0;
-            decimal profit = 0;
-            decimal cost = 0;
-            decimal clientPrice = 0;
-            decimal profitability = 0;
-            decimal furnitureAssembled = 0;
-            decimal averageProfitability = 0;
-            int countFurnitureAssembled = 0;
-            int countProfitability = 0;
-
-            foreach (DataGridViewRow row in dataGridView1.Rows)
+            try
             {
-                if (!row.IsNewRow)
+                if (filename == string.Empty) throw new Exception("Файл не был открыт.");
+                decimal totalProfit = 0;
+                decimal totalCost = 0;
+                decimal totalClientPrice = 0;
+                decimal totalProfitability = 0;
+                decimal totalFurnitureAssembled = 0;
+                decimal profit = 0;
+                decimal cost = 0;
+                decimal clientPrice = 0;
+                decimal profitability = 0;
+                decimal furnitureAssembled = 0;
+                decimal averageProfitability = 0;
+                int countFurnitureAssembled = 0;
+                int countProfitability = 0;
+
+                foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
+                    if (!row.IsNewRow)
+                    {
 
-                    // Проверка и преобразование значений
-                    if (row.Cells[15].Value != null && decimal.TryParse(row.Cells[15].Value.ToString(), out profit))
-                    {
-                        totalProfit += profit;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    if (row.Cells[14].Value != null && decimal.TryParse(row.Cells[14].Value.ToString(), out cost))
-                    {
-                        totalCost += cost;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    if (row.Cells[11].Value != null && decimal.TryParse(row.Cells[11].Value.ToString(), out clientPrice))
-                    {
-                        totalClientPrice += clientPrice;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    if (row.Cells[12].Value != null && decimal.TryParse(row.Cells[12].Value.ToString(), out furnitureAssembled))
-                    {
-                        totalFurnitureAssembled += furnitureAssembled;
-                        countFurnitureAssembled++;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    if (row.Cells[16].Value != null)
-                    {
-                        if (cost != 0)
+                        // Проверка и преобразование значений
+                        if (row.Cells[15].Value != null && decimal.TryParse(row.Cells[15].Value.ToString(), out profit))
                         {
-                            profitability = profit / cost * 100;
-                            totalProfitability += profitability;
-                            countProfitability++;
+                            totalProfit += profit;
                         }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                        else
+                        {
+                            MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        if (row.Cells[14].Value != null && decimal.TryParse(row.Cells[14].Value.ToString(), out cost))
+                        {
+                            totalCost += cost;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        if (row.Cells[11].Value != null && decimal.TryParse(row.Cells[11].Value.ToString(), out clientPrice))
+                        {
+                            totalClientPrice += clientPrice;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        if (row.Cells[12].Value != null && decimal.TryParse(row.Cells[12].Value.ToString(), out furnitureAssembled))
+                        {
+                            totalFurnitureAssembled += furnitureAssembled;
+                            countFurnitureAssembled++;
+                        }
+                        else
+                        {
+                            MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        if (row.Cells[16].Value != null)
+                        {
+                            if (cost != 0)
+                            {
+                                profitability = profit / cost * 100;
+                                totalProfitability += profitability;
+                                countProfitability++;
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Ошибка", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
 
+                    }
                 }
+
+                averageProfitability = totalProfitability / countProfitability;
+                // Создаем документ Word
+                Word.Application wordApp = new Word.Application();
+                Word.Document doc = wordApp.Documents.Add();
+
+                // Добавляем текст в документ
+                doc.Content.Text = "Отчет о рентабельности мебельного производства за месяц\n\n" +
+                                   $"Месяц: {toolStripComboBox1.Text}\n\n" +
+                                   "1. Общая прибыль:\n" +
+                                   $"   - Общая прибыль за месяц: {totalProfit} руб.\n\n" +
+                                   "2. Общая себестоимость:\n" +
+                                   $"   - Себестоимость: {totalCost} руб.\n\n" +
+                                   "3. Общая цена для клиента:\n" +
+                                   $"   - Общая цена для клиента за месяц: {totalClientPrice} руб.\n\n" +
+                                   "4. Затраты на сборку мебели:\n" +
+                                   $"   - Количество собранной мебели: {countFurnitureAssembled}\n" +
+                                   $"   - Общие затраты на сборку мебели за месяц: {totalFurnitureAssembled} руб.\n\n" +
+                                   "5. Рентабельность:\n" +
+                                   $"   - Рентабельность за месяц: {averageProfitability:F0}%";
+                // Сохраняем документ
+                wordApp.Visible = true;
             }
-
-            averageProfitability = totalProfitability / countProfitability;
-            // Создаем документ Word
-            Word.Application wordApp = new Word.Application();
-            Word.Document doc = wordApp.Documents.Add();
-
-            // Добавляем текст в документ
-            doc.Content.Text = "Отчет о рентабельности мебельного производства за месяц\n\n" +
-                               $"Месяц: {toolStripComboBox1.Text}\n\n" +
-                               "1. Общая прибыль:\n" +
-                               $"   - Общая прибыль за месяц: {totalProfit} руб.\n\n" +
-                               "2. Общая себестоимость:\n" +
-                               $"   - Себестоимость: {totalCost} руб.\n\n" +
-                               "3. Общая цена для клиента:\n" +
-                               $"   - Общая цена для клиента за месяц: {totalClientPrice} руб.\n\n" +
-                               "4. Затраты на сборку мебели:\n" +
-                               $"   - Количество собранной мебели: {countFurnitureAssembled}\n" +
-                               $"   - Общие затраты на сборку мебели за месяц: {totalFurnitureAssembled} руб.\n\n" +
-                               "5. Рентабельность:\n" +
-                               $"   - Рентабельность за месяц: {averageProfitability:F0}%";
-            // Сохраняем документ
-            wordApp.Visible = true;
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
 
 
         private void отчетПоКлиентамToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Создаем и настраиваем ProgressBar
-            System.Windows.Forms.ProgressBar progressBar = new System.Windows.Forms.ProgressBar();
-            progressBar.Maximum = dataGridView1.Rows.Count;
-            progressBar.Step = 1;
-            progressBar.Style = ProgressBarStyle.Continuous;
-
-            Form progressForm = new Form();
-            progressForm.Text = "Progress";
-            progressForm.Controls.Add(progressBar);
-            progressBar.Dock = DockStyle.Fill;
-            progressForm.StartPosition = FormStartPosition.CenterScreen;
-            progressForm.Size = new Size(300, 70);
-            progressForm.Show();
-
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.DoWork += (s, args) =>
+            try
             {
-                var duplicates = new Dictionary<string, List<DataGridViewRow>>();
+                if (filename == string.Empty) throw new Exception("Файл не был открыт.");
+                // Создаем и настраиваем ProgressBar
+                System.Windows.Forms.ProgressBar progressBar = new System.Windows.Forms.ProgressBar();
+                progressBar.Maximum = dataGridView1.Rows.Count;
+                progressBar.Step = 1;
+                progressBar.Style = ProgressBarStyle.Continuous;
 
-                // Проходим по столбцу 20 и собираем дубликаты
-                foreach (DataGridViewRow row in dataGridView1.Rows)
+                Form progressForm = new Form();
+                progressForm.Text = "Progress";
+                progressForm.Controls.Add(progressBar);
+                progressBar.Dock = DockStyle.Fill;
+                progressForm.StartPosition = FormStartPosition.CenterScreen;
+                progressForm.Size = new Size(300, 70);
+                progressForm.Show();
+
+                BackgroundWorker worker = new BackgroundWorker();
+                worker.WorkerReportsProgress = true;
+                worker.DoWork += (s, args) =>
                 {
-                    if (row.Cells[19].Value != null && !string.IsNullOrEmpty(row.Cells[19].Value.ToString()))
+                    var duplicates = new Dictionary<string, List<DataGridViewRow>>();
+
+                    // Проходим по столбцу 20 и собираем дубликаты
+                    foreach (DataGridViewRow row in dataGridView1.Rows)
                     {
-                        string cellValue = row.Cells[19].Value.ToString();
-                        if (!duplicates.ContainsKey(cellValue))
+                        if (row.Cells[19].Value != null && !string.IsNullOrEmpty(row.Cells[19].Value.ToString()))
                         {
-                            duplicates[cellValue] = new List<DataGridViewRow>();
-                        }
-                        duplicates[cellValue].Add(row);
-                    }
-                    else
-                    {
-                        // Закрашиваем ячейку красным цветом и добавляем текст ошибки, если она пустая
-                        row.Cells[19].Style.BackColor = Color.Red;
-                        row.Cells[19].Style.ForeColor = Color.White;
-                        row.Cells[19].Value = "Ошибка: пустая ячейка";
-                    }
-                }
-
-                // Создаем новую книгу Excel
-                Excel.Application exApp = new Excel.Application();
-                Excel.Workbook workbook = exApp.Workbooks.Add();
-                Excel.Worksheet defaultSheet = workbook.Worksheets[1];
-
-                foreach (var entry in duplicates)
-                {
-                    Excel.Worksheet worksheet = null;
-                    try
-                    {
-                        worksheet = workbook.Sheets.Add();
-                        worksheet.Name = entry.Key;
-
-                        // Копируем заголовки столбцов
-                        for (int i = 0; i < dataGridView1.Columns.Count; i++)
-                        {
-                            Excel.Range headerCell = worksheet.Cells[1, i + 1];
-                            headerCell.Value = dataGridView1.Columns[i].HeaderText;
-                            headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                            headerCell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
-                            headerCell.Font.Bold = true;
-                        }
-
-                        // Копируем строки
-                        int rowIndex = 2;
-                        foreach (var row in entry.Value)
-                        {
-                            for (int i = 0; i < row.Cells.Count; i++)
+                            string cellValue = row.Cells[19].Value.ToString();
+                            if (!duplicates.ContainsKey(cellValue))
                             {
-                                worksheet.Cells[rowIndex, i + 1] = row.Cells[i].Value;
+                                duplicates[cellValue] = new List<DataGridViewRow>();
                             }
-                            rowIndex++;
+                            duplicates[cellValue].Add(row);
                         }
-                        worksheet.Columns.AutoFit();
+                        else
+                        {
+                            // Закрашиваем ячейку красным цветом и добавляем текст ошибки, если она пустая
+                            row.Cells[19].Style.BackColor = Color.Red;
+                            row.Cells[19].Style.ForeColor = Color.White;
+                            row.Cells[19].Value = "Ошибка: пустая ячейка";
+                        }
                     }
-                    catch (System.Runtime.InteropServices.COMException ex)
+
+                    // Создаем новую книгу Excel
+                    Excel.Application exApp = new Excel.Application();
+                    Excel.Workbook workbook = exApp.Workbooks.Add();
+                    Excel.Worksheet defaultSheet = workbook.Worksheets[1];
+
+                    foreach (var entry in duplicates)
                     {
-                        MessageBox.Show($"Не удалось создать лист с именем '{entry.Key}': {ex.Message}");
-                        worksheet?.Delete();
+                        Excel.Worksheet worksheet = null;
+                        try
+                        {
+                            worksheet = workbook.Sheets.Add();
+                            worksheet.Name = entry.Key;
+
+                            // Копируем заголовки столбцов
+                            for (int i = 0; i < dataGridView1.Columns.Count; i++)
+                            {
+                                Excel.Range headerCell = worksheet.Cells[1, i + 1];
+                                headerCell.Value = dataGridView1.Columns[i].HeaderText;
+                                headerCell.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                                headerCell.VerticalAlignment = Excel.XlVAlign.xlVAlignCenter;
+                                headerCell.Font.Bold = true;
+                            }
+
+                            // Копируем строки
+                            int rowIndex = 2;
+                            foreach (var row in entry.Value)
+                            {
+                                for (int i = 0; i < row.Cells.Count; i++)
+                                {
+                                    worksheet.Cells[rowIndex, i + 1] = row.Cells[i].Value;
+                                }
+                                rowIndex++;
+                            }
+                            worksheet.Columns.AutoFit();
+                        }
+                        catch (System.Runtime.InteropServices.COMException ex)
+                        {
+                            MessageBox.Show($"Не удалось создать лист с именем '{entry.Key}': {ex.Message}");
+                            worksheet?.Delete();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Произошла ошибка: {ex.Message}");
+                            worksheet?.Delete();
+                        }
+
+                        worker.ReportProgress(duplicates.Count);
                     }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Произошла ошибка: {ex.Message}");
-                        worksheet?.Delete();
-                    }
+                    defaultSheet.Delete();
+                    exApp.Visible = true;
+                };
 
-                    worker.ReportProgress(duplicates.Count);
-                }
-                defaultSheet.Delete();
-                exApp.Visible = true;
-            };
+                worker.ProgressChanged += (s, args) =>
+                {
+                    progressBar.Value = args.ProgressPercentage;
+                };
 
-            worker.ProgressChanged += (s, args) =>
+                worker.RunWorkerCompleted += (s, args) =>
+                {
+                    progressForm.Close();
+                };
+
+                worker.RunWorkerAsync();
+            }
+            catch (Exception ex)
             {
-                progressBar.Value = args.ProgressPercentage;
-            };
-
-            worker.RunWorkerCompleted += (s, args) =>
-            {
-                progressForm.Close();
-            };
-
-            worker.RunWorkerAsync();
+                MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // Обработчик события для изменения значения в ячейке
@@ -651,6 +693,8 @@ namespace ProfitFurniture_2._0
 
         private void Calculate_FormClosed(object sender, FormClosedEventArgs e)
         {
+            GC.Collect(); 
+            GC.WaitForPendingFinalizers();
             System.Windows.Forms.Application.Exit();
         }
 
@@ -666,7 +710,6 @@ namespace ProfitFurniture_2._0
 
                 if (res == DialogResult.OK)
                 {
-
                     filename = saveFileDialog1.FileName;
 
                     // Запрашиваем название книги, количество листов и их названия
@@ -681,35 +724,46 @@ namespace ProfitFurniture_2._0
                     Excel.Application excelApp = new Excel.Application();
                     Excel.Workbook workbook = excelApp.Workbooks.Add();
 
-                    // Удаляем автоматически созданный лист
-                    Excel.Worksheet defaultSheet = workbook.Worksheets[1];
-
-
-                    // Добавляем листы в обратном порядке
-                    for (int i = sheetCount - 1; i >= 0; i--)
+                    try
                     {
-                        Excel.Worksheet worksheet = workbook.Worksheets.Add();
-                        worksheet.Name = sheetNames[i];
+                        // Удаляем автоматически созданный лист
+                        Excel.Worksheet defaultSheet = workbook.Worksheets[1];
 
-                        // Создаем заголовки по шаблону
-                        string[] headers = { "Дата", "Номер", "ДСП", "Раскрой", "Кромка", "Z", "Двери", "Пф, ф.", "Тр.", "1-Д", "2-М", "Цена", "Сборка", "Бригада", "С/Стоим.", "Прибыль", "Рент.", "Тип мебели", "Адрес", "Клиент" };
-                        for (int j = 0; j < headers.Length; j++)
+                        // Добавляем листы в обратном порядке
+                        for (int i = sheetCount - 1; i >= 0; i--)
                         {
-                            worksheet.Cells[1, j + 1] = headers[j];
-                            Excel.Range headerRange = worksheet.Cells[1, j + 1];
-                            headerRange.Font.Bold = true;
-                            headerRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
-                        }
-                    }
-                    defaultSheet.Delete();
-                    // Сохраняем файл
-                    workbook.SaveAs(filename);
-                    workbook.Close();
-                    excelApp.Quit();
+                            Excel.Worksheet worksheet = workbook.Worksheets.Add();
+                            worksheet.Name = sheetNames[i];
 
-                    // Освобождаем ресурсы
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
-                    System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+                            // Создаем заголовки по шаблону
+                            string[] headers = { "Дата", "Номер", "ДСП", "Раскрой", "Кромка", "Z", "Двери", "Пф, ф.", "Тр.", "1-Д", "2-М", "Цена", "Сборка", "Бригада", "С/Стоим.", "Прибыль", "Рент.", "Тип мебели", "Адрес", "Клиент" };
+                            for (int j = 0; j < headers.Length; j++)
+                            {
+                                worksheet.Cells[1, j + 1] = headers[j];
+                                Excel.Range headerRange = worksheet.Cells[1, j + 1];
+                                headerRange.Font.Bold = true;
+                                headerRange.HorizontalAlignment = Excel.XlHAlign.xlHAlignCenter;
+                            }
+                        }
+                        defaultSheet.Delete();
+
+                        // Сохраняем файл
+                        workbook.SaveAs(filename);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    finally
+                    {
+                        // Закрываем книгу и приложение
+                        workbook.Close(false);
+                        excelApp.Quit();
+
+                        // Освобождаем ресурсы
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(workbook);
+                        System.Runtime.InteropServices.Marshal.ReleaseComObject(excelApp);
+                    }
 
                     // Вызываем существующее событие
                     OpenExcelFile(filename);
@@ -723,6 +777,7 @@ namespace ProfitFurniture_2._0
             {
                 MessageBox.Show(ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
 
         }
 
